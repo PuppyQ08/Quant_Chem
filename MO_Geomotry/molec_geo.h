@@ -13,15 +13,21 @@ public:
   */
   Molecule(const char *filename, int charge);
   ~Molecule();
+  int natom;
   /*varies functions*/
   /*printfn*/
   void printfn();
 
   /*bond distance calculation*/
-  void bondLength();
+  double bondLength(int i, int j);
 
   /*bond angle*/
-  void bondAng();
+  double bondAng(int i, int j, int k);
+
+  /*bond out of plane angles*/
+  double bondplanA(int i, int j,int k, int l);
+  /*unit vector helper function, which I want to leave out initially*/
+  double unit(int judge, int i, int j);
 
 private:
   int _atomnum;
@@ -30,6 +36,6 @@ private:
   double *_x;
   double *_y;
   double *_z;
-  double **_distc;
+  //double **_distc; So we only store necessary data like coordinates and zvalue
 };
 #endif
