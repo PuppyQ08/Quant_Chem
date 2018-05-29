@@ -1,5 +1,6 @@
 #include "molec_geo.h"
 #include <iostream>
+#include <cmath>
 using namespace std;
 Molecule::Molecule(const char *filename, int charge){
     _charge = charge;
@@ -20,6 +21,9 @@ Molecule::~Molecule(){
       delete[] _x;
       delete[] _y;
       delete[] _z;
+      for(int i = 0; i < _atomnum; i++)
+        delete _distc[i];
+      delete []_distc;
 }
 
 void Molecule::printfn(){
@@ -31,7 +35,8 @@ void Molecule::printfn(){
 void Molecule::bondLength(){
   for(int i = 0; i < _atomnum; i++){
     for(int j = 0; j < _atomnum; j++){
-      
+      _distc[i][j] = sqrt(pow((_x[i] - _x[j]), 2) + pow((_y[i]- _y[j]), 2) + pow((_z[i] - _z[j]),2));
+      printf("%20.12f\n",_distc[i][j]);
     }
   }
 }

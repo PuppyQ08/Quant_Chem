@@ -20,6 +20,9 @@ public:
   /*bond distance calculation*/
   void bondLength();
 
+  /*bond angle*/
+  void bondAng();
+
 private:
   int _atomnum;
   int _charge;

@@ -8,6 +8,7 @@
     if(std::string(argv[1]) == "acetal"){
       Molecule obj("acetaldehyde.txt", 0);
       obj.printfn();
+      obj.bondLength();
     }
   }
 
