@@ -13,6 +13,8 @@ using namespace std;
  int main(int argc, char const *argv[]) {
   if(argc == 2){
     if(std::string(argv[1]) == "acetal"){
+
+
       Molecule obj("acetaldehyde.txt", 0);
       for (int i = 0;  i  < obj.natom; i++) {
       //obj.printfn();
@@ -24,6 +26,8 @@ using namespace std;
             }
         }
       }
+
+    //bond - out of plan angles
     for(int i=0; i < obj.natom; i++) {
       for(int k=0; k < obj.natom; k++) {
         for(int j=0; j < obj.natom; j++) {
@@ -34,8 +38,23 @@ using namespace std;
       }
     }
   }
-}
+    //torsion
+  for(int i=0; i < obj.natom; i++) {
+    for(int j=0; j < i; j++) {
+      for(int k=0; k < j; k++) {
+        for(int l=0; l < k; l++) {
+          if(obj.bondLength(i,j) < 4.0 && obj.bondLength(j,k) < 4.0 && obj.bondLength(k,l) < 4.0)
+            printf("%2d-%2d-%2d-%2d %10.6f\n", i, j, k, l, obj.torsionAng(i,j,k,l)*(180.0/acos(-1.0)));
+        }
+      }
+    }
   }
 
+
+  //cent of mass
+  printf("%20.12f %20.12f %20.12f\n", obj.centMass(0),obj.centMass(1),obj.centMass(2));
+}
+}
   return 0;
+
 }

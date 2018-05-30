@@ -16,6 +16,7 @@ Molecule::Molecule(const char *filename, int charge){
     iptfile>> _zval[i] >> _x[i]>> _y[i]>> _z[i];
     //  _distc[i] = new double[_atomnum];
     }
+
 }
 Molecule::~Molecule(){
   delete[] _zval;
@@ -71,6 +72,61 @@ double Molecule::bondplanA(int i, int j,int k, int l){
     return theta;
 }
 
-double torsionAng(int i, int j, int k, int l){
-  
+double Molecule::torsionAng(int i, int j, int k, int l){
+  double eijk_x = (unit(1,j,i) * unit(2,j,k) - unit(2,j,i) * unit(1,j,k));
+  double eijk_y = (unit(2,j,i) * unit(0,j,k) - unit(0,j,i) * unit(2,j,k));
+  double eijk_z = (unit(0,j,i) * unit(1,j,k) - unit(1,j,i) * unit(0,j,k));
+
+  double ejkl_x = (unit(1,k,j) * unit(2,k,l) - unit(2,k,j) * unit(1,k,l));
+  double ejkl_y = (unit(2,k,j) * unit(0,k,l) - unit(0,k,j) * unit(2,k,l));
+  double ejkl_z = (unit(0,k,j) * unit(1,k,l) - unit(1,k,j) * unit(0,k,l));
+
+  double exx = eijk_x * ejkl_x;
+  double eyy = eijk_y * ejkl_y;
+  double ezz = eijk_z * ejkl_z;
+
+  double tau = (exx + eyy + ezz)/(sin(bondAng(i, j, k))* sin(bondAng(j, k, l)));
+
+  if(tau < -1.0) tau = acos(-1.0);
+  else if(tau > 1.0) tau = acos(1.0);
+  else tau = acos(tau);
+
+  //to determine the sign of angles
+  double cross_x = eijk_y * ejkl_z - eijk_z * ejkl_y;
+  double cross_y = eijk_z * ejkl_x - eijk_x * ejkl_z;
+  double cross_z = eijk_x * ejkl_y - eijk_y * ejkl_x;
+  double norm = cross_x*cross_x + cross_y*cross_y + cross_z*cross_z;
+  cross_x /= norm;
+  cross_y /= norm;
+  cross_z /= norm;
+  double sign = 1.0;
+  double dot = cross_x*unit(0,j,k)+cross_y*unit(1,j,k)+cross_z*unit(2,j,k);
+  if(dot < 0.0) sign = -1.0;
+  return tau*sign;
+}
+
+double Molecule::centMass(int judge){
+  double sum = 0.0, masum = 0.0;
+  if(judge == 0){
+    for (int i = 0; i < _atomnum; i++) {
+      sum += _x[i] * _amass[_zval[i]];
+      masum += _amass[_zval[i]];
+    }
+    return sum/masum;
+  }
+  else if(judge == 1){
+    for (int i = 0; i < _atomnum; i++) {
+      sum += _y[i] * _amass[_zval[i]];
+      masum += _amass[_zval[i]];
+    }
+    return sum/masum;
+  }
+  else if(judge == 2){
+    for (int i = 0; i < _atomnum; i++) {
+      sum += _z[i] * _amass[_zval[i]];
+      masum += _amass[_zval[i]];
+    }
+    return sum/masum;
+  }
+  return 0;
 }

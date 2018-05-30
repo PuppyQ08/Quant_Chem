@@ -33,6 +33,9 @@ public:
   /*torsion Angles of molecuels*/
   double torsionAng(int i, int j, int k, int l);
 
+  /*to get the cent of mass of the molecule*/
+  double centMass(int judge);
+
 private:
   int _atomnum;
   int _charge;
@@ -40,6 +43,7 @@ private:
   double *_x;
   double *_y;
   double *_z;
+  double _amass[9]= {0.0, 1.00782503223,  4.00260325413,  7.0160034366,  9.012183065, 11.00930536, 12.0000000, 14.00307400443, 15.99491461957};
   //double **_distc; So we only store necessary data like coordinates and zvalue
 };
 #endif
