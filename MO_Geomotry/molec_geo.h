@@ -26,8 +26,12 @@ public:
 
   /*bond out of plane angles*/
   double bondplanA(int i, int j,int k, int l);
-  /*unit vector helper function, which I want to leave out initially*/
+
+  /*unit vector helper function, which I want to ignore initially*/
   double unit(int judge, int i, int j);
+
+  /*torsion Angles of molecuels*/
+  double torsionAng(int i, int j, int k, int l);
 
 private:
   int _atomnum;

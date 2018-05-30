@@ -70,3 +70,7 @@ double Molecule::bondplanA(int i, int j,int k, int l){
 
     return theta;
 }
+
+double torsionAng(int i, int j, int k, int l){
+  
+}
