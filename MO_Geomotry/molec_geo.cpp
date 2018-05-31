@@ -1,6 +1,7 @@
 #include "molec_geo.h"
 #include <iostream>
 #include <cmath>
+#include <armadillo>
 using namespace std;
 Molecule::Molecule(const char *filename, int charge){
   _charge = charge;
@@ -129,4 +130,28 @@ double Molecule::centMass(int judge){
     return sum/masum;
   }
   return 0;
+}
+
+double Molecule::momntInert(){
+  //to generate inertia tensor matrix
+  arma::mat inertia(3,3);
+  double Ixx = 0, Iyy = 0, Izz = 0, Ixy = 0, Ixz = 0, Iyz =0;
+  for (int i = 0; i < _atomnum; i++) {
+    Ixx += _amass[_zval[i]]*(_y[i]*_y[i] + _z[i]*_z[i]);
+    Iyy += _amass[_zval[i]]*(_x[i]*_x[i] + _z[i]*_z[i]);
+    Izz += _amass[_zval[i]]*(_y[i]*_y[i] + _x[i]*_x[i]);
+    Ixy += _amass[_zval[i]]*_x[i]*_y[i];
+    Ixz += _amass[_zval[i]]*_x[i]*_z[i];
+    Iyz += _amass[_zval[i]]*_z[i]*_y[i];
+  }
+  inertia(1,1) = Ixx;
+  inertia(2,2) = Iyy;
+  inertia(3,3) = Izz;
+  inertia(1,2) = inertia(2,1) = Ixy;
+  inertia(1,3) = inertia(3,1) = Ixz;
+  inertia(2,3) = inertia(3,2) = Iyz;
+  arma::vec eigval;
+  arma::mat eigvec;
+  arma::eig_sym(eigval, eigvec, inertia);
+  
 }

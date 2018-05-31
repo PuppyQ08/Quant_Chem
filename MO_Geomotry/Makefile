@@ -2,9 +2,9 @@ EXENAME = molec_geo
 OBJS = main.o molec_geo.o
 
 CXX = clang++
-CXXFLAGS = -std=c++1y -stdlib=libc++ -c -g -O0 -Wall -Wextra -pedantic
+CXXFLAGS = -std=c++1y -stdlib=libc++ -c -g -O2 -Wall -Wextra -pedantic
 LD = clang++
-LDFLAGS = -std=c++1y -stdlib=libc++ -lpthread -lm
+LDFLAGS = -std=c++1y -stdlib=libc++ -lpthread -lm  -larmadillo
 
 all : $(EXENAME)
 

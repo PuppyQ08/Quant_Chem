@@ -36,6 +36,8 @@ public:
   /*to get the cent of mass of the molecule*/
   double centMass(int judge);
 
+  /*Principle Moments of Inertia*/
+  double momntInert();
 private:
   int _atomnum;
   int _charge;
