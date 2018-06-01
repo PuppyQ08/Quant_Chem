@@ -12,6 +12,10 @@ Molecule::Molecule(const char *filename, int charge){
   _x = new double[_atomnum];
   _y = new double[_atomnum];
   _z = new double[_atomnum];
+  _xm = new double[_atomnum];
+  _ym = new double[_atomnum];
+  _zm = new double[_atomnum];
+  _momntInert = new double[3];
   //  _distc = new double*[_atomnum];
   for(int i = 0; i < _atomnum; i++){
     iptfile>> _zval[i] >> _x[i]>> _y[i]>> _z[i];
@@ -24,6 +28,9 @@ Molecule::~Molecule(){
   delete[] _x;
   delete[] _y;
   delete[] _z;
+  delete[] _xm;
+  delete[] _ym;
+  delete[] _zm;
 }
 
 double Molecule::unit(int judge, int i, int j){
@@ -107,51 +114,65 @@ double Molecule::torsionAng(int i, int j, int k, int l){
 }
 
 double Molecule::centMass(int judge){
-  double sum = 0.0, masum = 0.0;
+  double sum = 0.0, masum = 0.0, centMass = 0.0;
   if(judge == 0){
     for (int i = 0; i < _atomnum; i++) {
       sum += _x[i] * _amass[_zval[i]];
       masum += _amass[_zval[i]];
     }
-    return sum/masum;
+    centMass = sum/masum;
+    for(int i = 0;i < _atomnum; i++)
+      _xm[i] = _x[i]-centMass;//update the coordinate based on cent of mass
+    return centMass;
   }
   else if(judge == 1){
     for (int i = 0; i < _atomnum; i++) {
       sum += _y[i] * _amass[_zval[i]];
       masum += _amass[_zval[i]];
     }
-    return sum/masum;
+    centMass = sum/masum;
+    for(int i = 0;i < _atomnum; i++)
+      _ym[i] = _y[i]-centMass;
+    return centMass;
   }
   else if(judge == 2){
     for (int i = 0; i < _atomnum; i++) {
       sum += _z[i] * _amass[_zval[i]];
       masum += _amass[_zval[i]];
     }
-    return sum/masum;
+    centMass = sum/masum;
+    for(int i = 0;i < _atomnum; i++)
+      _zm[i] = _z[i]-centMass;
+    return centMass;
   }
   return 0;
 }
 
-double Molecule::momntInert(){
+double* Molecule::momntInert(){
   //to generate inertia tensor matrix
   arma::mat inertia(3,3);
-  double Ixx = 0, Iyy = 0, Izz = 0, Ixy = 0, Ixz = 0, Iyz =0;
+  double Ixx = 0.0, Iyy = 0.0, Izz = 0.0, Ixy = 0.0, Ixz = 0.0, Iyz =0.0;
   for (int i = 0; i < _atomnum; i++) {
-    Ixx += _amass[_zval[i]]*(_y[i]*_y[i] + _z[i]*_z[i]);
-    Iyy += _amass[_zval[i]]*(_x[i]*_x[i] + _z[i]*_z[i]);
-    Izz += _amass[_zval[i]]*(_y[i]*_y[i] + _x[i]*_x[i]);
-    Ixy += _amass[_zval[i]]*_x[i]*_y[i];
-    Ixz += _amass[_zval[i]]*_x[i]*_z[i];
-    Iyz += _amass[_zval[i]]*_z[i]*_y[i];
+    Ixx += _amass[_zval[i]]*(_ym[i]*_ym[i] + _zm[i]*_zm[i]);
+    Iyy += _amass[_zval[i]]*(_xm[i]*_xm[i] + _zm[i]*_zm[i]);
+    Izz += _amass[_zval[i]]*(_ym[i]*_ym[i] + _xm[i]*_xm[i]);
+    Ixy += _amass[_zval[i]]*_xm[i]*_ym[i];
+    Ixz += _amass[_zval[i]]*_xm[i]*_zm[i];
+    Iyz += _amass[_zval[i]]*_zm[i]*_ym[i];
   }
-  inertia(1,1) = Ixx;
-  inertia(2,2) = Iyy;
-  inertia(3,3) = Izz;
-  inertia(1,2) = inertia(2,1) = Ixy;
-  inertia(1,3) = inertia(3,1) = Ixz;
-  inertia(2,3) = inertia(3,2) = Iyz;
+  inertia(0,0) = Ixx;
+  inertia(1,1) = Iyy;
+  inertia(2,2) = Izz;
+  inertia(0,1) = inertia(1,0) = Ixy;
+  inertia(0,2) = inertia(2,0) = Ixz;
+  inertia(1,2) = inertia(2,1) = Iyz;
   arma::vec eigval;
   arma::mat eigvec;
   arma::eig_sym(eigval, eigvec, inertia);
-  
+  _momntInert[0] = eigval(0);
+  _momntInert[1] = eigval(1);
+  _momntInert[2] = eigval(2);
+  return _momntInert;
 }
+
+double

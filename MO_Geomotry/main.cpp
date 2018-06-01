@@ -53,7 +53,12 @@ using namespace std;
 
   //cent of mass
   printf("%20.12f %20.12f %20.12f\n", obj.centMass(0),obj.centMass(1),obj.centMass(2));
+  //moment of innertia
+  double *momntInertout = obj.momntInert();
+  printf("%20.12f %20.12f %20.12f \n",momntInertout[0],momntInertout[1],momntInertout[2]);
+
 }
+
 }
   return 0;
 
