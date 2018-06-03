@@ -16,6 +16,7 @@ Molecule::Molecule(const char *filename, int charge){
   _ym = new double[_atomnum];
   _zm = new double[_atomnum];
   _momntInert = new double[3];
+  _rotatnCnstnt = new double[3];
   //  _distc = new double*[_atomnum];
   for(int i = 0; i < _atomnum; i++){
     iptfile>> _zval[i] >> _x[i]>> _y[i]>> _z[i];
@@ -175,4 +176,12 @@ double* Molecule::momntInert(){
   return _momntInert;
 }
 
-double
+double* Molecule::rotatnCnstnt(){
+  double constB = 6.6260755E-34/(8.0*acos(-1.0)*acos(-1.0));
+  constB /= 1.6605402E-27 * 0.529177249E-10 * 0.529177249E-10;
+  constB /= 2.99792458E10;;
+  _rotatnCnstnt[0] = constB/_momntInert[0];
+  _rotatnCnstnt[1] = constB/_momntInert[1];
+  _rotatnCnstnt[2] = constB/_momntInert[2];
+  return _rotatnCnstnt;
+}

@@ -57,6 +57,9 @@ using namespace std;
   double *momntInertout = obj.momntInert();
   printf("%20.12f %20.12f %20.12f \n",momntInertout[0],momntInertout[1],momntInertout[2]);
 
+  double *rotationC = obj.rotatnCnstnt();
+  printf("%20.12f %20.12f %20.12f \n",rotationC[0],rotationC[1],rotationC[2]);
+
 }
 
 }
