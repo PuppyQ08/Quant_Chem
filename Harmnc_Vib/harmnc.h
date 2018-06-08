@@ -5,9 +5,14 @@
 #include <armadillo>
 class Harmnc_vib{
 public:
+  /*during the constructor
+  *we would have input zvalue, coordinates and hessian function
+  */
   Harmnc_vib();
   ~Harmnc_vib();
   void printout();
+  /*to diagonlize mass-weighted hessian matrix*/
+  void freq();
 private:
   size_t _numatom;
   double **_coor;

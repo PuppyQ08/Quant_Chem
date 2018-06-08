@@ -3,6 +3,7 @@
 
 int main() {
   Harmnc_vib harm;
-  harm.printout();
+  //harm.printout();
+  harm.freq();
   return 0;
 }
