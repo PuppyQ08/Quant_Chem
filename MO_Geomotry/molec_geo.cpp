@@ -22,6 +22,7 @@ Molecule::Molecule(const char *filename, int charge){
     iptfile>> _zval[i] >> _x[i]>> _y[i]>> _z[i];
     //  _distc[i] = new double[_atomnum];
     }
+  iptfile.close();
 
 }
 Molecule::~Molecule(){

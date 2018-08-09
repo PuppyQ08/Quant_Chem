@@ -53,6 +53,7 @@ Harmnc_vib::~Harmnc_vib(){
     delete _hessian[i];
   }
   delete []_hessian;
+  delete _msHessian;// I am not sure whether if this work or not
 }
 
 void Harmnc_vib::printout(){
