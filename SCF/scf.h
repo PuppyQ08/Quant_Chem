@@ -15,6 +15,7 @@ private:
   int _numatom;
   double _nucrepul;
   arma::mat * _ovlap;
+  arma::mat * _coreHam;
 };
 
 #endif

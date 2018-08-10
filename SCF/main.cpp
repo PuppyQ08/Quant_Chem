@@ -1,5 +1,5 @@
 #include "scf.h"
-int main(int argc, char const *argv[]) {
+int main() {
   SCF test("water");
   test.print();
    return 0;
