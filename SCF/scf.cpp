@@ -21,9 +21,18 @@ SCF::SCF(std::string input){
   */
   _numorbit = 7;
   _numoccp = 5;
-  _ioff.resize(_numorbit);
+  _ioff.resize(pow(_numorbit,4));
+  //to set up ioff:
+  _ioff[0] = 0;
+  for(int i=1; i < pow(_numorbit,4); i++)
+  _ioff[i] = _ioff[i-1] + i;
+  //
   _ovlap = new arma::mat(_numorbit,_numorbit);
   _coreHam = new arma::mat(_numorbit,_numorbit);
+  _Pini = new arma::mat(_numorbit,_numorbit);
+  _Pnext = new arma::mat(_numorbit,_numorbit);
+  _Fini = new arma::mat(_numorbit,_numorbit);
+  _Fnext = new arma::mat(_numorbit,_numorbit);
   int i = 0, j = 0,k = 0, l = 0;
   double temp,temp2, temp3;
   /*
@@ -42,9 +51,6 @@ SCF::SCF(std::string input){
 }
   /*two electron integral */
   double temp4;
-  _ioff[0] = 0;
-  for(size_t i=1; i < _numorbit; i++)
-  _ioff[i] = _ioff[i-1] + i;
   while (!ipttwoelec.eof()) {
     ipttwoelec >> i >> j >> k >> l >> temp4;
     _twoelec[getijkl(i, j, k, l)] = temp4;
@@ -56,7 +62,7 @@ SCF::SCF(std::string input){
 int SCF::getijkl(int i, int j, int k, int l){
   int ij = 0, kl = 0, ijkl = 0;
   ij = (i > j) ? _ioff[i] + j : _ioff[j] + i;
-  kl = (k > l) ? _ioff[k] + l : _ioff[k] + l;
+  kl = (k > l) ? _ioff[k] + l : _ioff[l] + k;
   ijkl = (ij > kl) ? _ioff[ij] + kl : _ioff[kl] + ij;
   return ijkl;
 }
@@ -74,6 +80,7 @@ void SCF::print(arma::mat ipt){
     }
   }
 }
+
 
 void SCF::calculation(){
   /*diagonlize overlap Matrix*/
@@ -95,17 +102,58 @@ void SCF::calculation(){
   */
   arma::mat lmd_sqrti = arma::sqrt(arma::inv(Seigvalmat));
 
-  _Ssqrtinv = Seigvec * lmd_sqrti * Seigvec.t();//different from website But I believe it caused by different order of eigenvalue?
+  _Ssqrtinv = Seigvec * lmd_sqrti * Seigvec.t();//different from website But I believe it caused by different order of eigenvalue? No it is caused by wrong input file
   /*temporaly moving on
+  * get the Fock matrix for inital guess from hailtonian
+  * then transfer to orthogonal basis to get Fock prime
+  * then diagonlize Fock! in the orthogonal basis!
+  * then transfer back to original basis which is the atomic orbitals
   */
-  _Fini = _Ssqrtinv.t() * (*_coreHam) * _Ssqrtinv;
-  print(_Ssqrtinv);
+  *_Fini = *_coreHam;
+  _Finiprime = _Ssqrtinv.t() * (*_coreHam) * _Ssqrtinv;
   //digonalize Fock Matrix
   arma::vec Feigval;
   arma::mat Feigvec;
-  arma::eig_sym(Feigval, Feigvec, _Fini);
+  arma::eig_sym(Feigval, Feigvec, _Finiprime);
   arma::mat Coe_orig = _Ssqrtinv * Feigvec;
+  //density matrix equals to C * C.t()
+  *_Pini = Coe_orig.cols(0, _numoccp -1) *  Coe_orig.cols(0, _numoccp -1).t();
+  //then get the Energy
+  arma::mat Eini = (*_Pini) % ((*_coreHam) + *_Fini);
+  _Eini = arma::accu(Eini);
+  _Eini += _nucrepul;
+  printf("%f\n", _Eini);
 
-  arma::mat P = Coe_orig.cols(0, _numoccp -1) *  Coe_orig.cols(0, _numoccp -1).t();
-  print(P);
+  /*iteration!
+  */
+  while(true){
+  /*build new Fock ! by old density matrix */
+  for (size_t i = 0; i < _numorbit; i++) {
+      for (size_t j = 0; j < _numorbit; j++) {
+        (*_Fnext)(i,j) = (*_coreHam)(i,j);
+        for (size_t k = 0; k < _numorbit; k++) {
+          for (size_t l = 0; l < _numorbit; l++) {
+            (*_Fnext)(i,j) += (*_Pini)(k,l) * (2 * _twoelec[getijkl(i+1,j+1,k+1,l+1)] - _twoelec[getijkl(i+1,k+1,j+1,l+1)]);
+          }
+        }
+      }
+    }
+    _Finiprime = _Ssqrtinv.t() * (*_Fnext) * _Ssqrtinv;
+    /* to get density matrix and get Energy again..
+    */
+    arma::vec eigval;
+    arma::mat eigvec;
+    arma::eig_sym(eigval, eigvec, _Finiprime);
+    arma::mat Coe = _Ssqrtinv * eigvec;
+    //density matrix equals to C * C.t()
+    *_Pnext = Coe.cols(0, _numoccp -1) *  Coe.cols(0, _numoccp -1).t();
+    //print(*_Pnext);
+    _Enext = arma::accu((*_Pnext) % ((*_coreHam) + *_Fnext)) + _nucrepul;
+    printf("%20.12f\n", _Enext);
+    if(abs(_Enext - _Eini) < 0.00000000001)
+    break;
+    _Eini = _Enext;
+    *_Fini = *_Fnext;
+    *_Pini = *_Pnext;
+  }
 }
