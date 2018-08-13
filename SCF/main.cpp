@@ -1,7 +1,6 @@
 #include "scf.h"
 int main() {
   SCF test("water");
-  test.
-  test.print();
+  test.calculation();
   return 0;
  }
